@@ -199,7 +199,7 @@ class IndexingTestCase(ElasticSearchTestCase):
         self.assertRaises(ConnectionError, conn.count, '*:*')
 
         # Test invalid JSON.
-        self.assertRaises(ValueError, conn._encode_json, object())
+        self.assertRaises(TypeError, conn._encode_json, object())
         resp = requests.Response()
         resp._content = '{"busted" "json" "that": ["is] " wrong'
         self.assertRaises(InvalidJsonResponseError, conn._decode_response, resp)
@@ -561,6 +561,10 @@ class JsonTests(ElasticSearchTestCase):
         """Make sure tuples encode as lists."""
         self.assertEqual(self.conn._encode_json({'hi': (1, 2, 3)}),
                          '{"hi": [1, 2, 3]}')
+
+    def test_unhandled_encoding(self):
+        """Make sure we raise a TypeError when encoding an unsupported type."""
+        self.assertRaises(TypeError, self.conn._encode_json, object())
 
     def test_encoding(self):
         """Test encoding a zillion other types."""
