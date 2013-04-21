@@ -130,17 +130,15 @@ class ElasticSearch(object):
 
     def _concat(self, items):
         """
-        Return a comma-delimited concatenation of the elements of ``items``,
-        with any occurrences of "_all" omitted.
+        Return a comma-delimited concatenation of the elements of ``items``.
 
-        If ``items`` is a string, promote it to a 1-item list.
+        If ``items`` is a string, return it verbatim.
         """
-        # TODO: Why strip out _all?
         if items is None:
             return ''
         if isinstance(items, string_types):
-            items = [items]
-        return ','.join(i for i in items if i != '_all')
+            return items
+        return ','.join(items)
 
     @classmethod
     def _to_query(cls, obj):
@@ -431,16 +429,18 @@ class ElasticSearch(object):
 
     @es_kwargs('q', 'df', 'analyzer', 'default_operator', 'source' 'routing',
                'replication', 'consistency')
-    def delete_by_query(self, index, doc_type, query, query_params=None):
+    def delete_by_query(self, query, index, doc_type=None, query_params=None):
         """
         Delete typed JSON documents from a specific index based on query.
 
-        :arg index: An index or iterable thereof from which to delete
-        :arg doc_type: The type of document or iterable thereof to delete
         :arg query: A dictionary that will convert to ES's query DSL or a
             string that will serve as a textual query to be passed as the ``q``
             query string parameter. (Passing the ``q`` kwarg yourself is
             deprecated.)
+        :arg index: An index or iterable thereof from which to delete, or
+            '_all' to not limit by index.
+        :arg doc_type: The type of document or iterable thereof to delete. Omit
+            to not limit by type.
 
         See `ES's delete-by-query API`_ for more detail.
 
